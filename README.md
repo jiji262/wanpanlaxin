@@ -50,7 +50,16 @@
 | 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-turbo` |
 | 本地 Ollama | `http://localhost:11434/v1` | `llama3.2` |
 
-### 第四步：开始转存
+### 第四步：添加你的社群二维码（可选）
+
+如果你想在工具底部展示自己的公众号/微信群：
+
+1. 准备两张二维码图片（建议 400x400 像素）
+2. 重命名为 `qr_gongzhonghao.jpg` 和 `qr_group.jpg`
+3. 放到 `static/` 目录下
+4. 修改 `quark_mover.py` 中的推广文案（搜索 "想用 AI 做网盘拉新"）
+
+### 第五步：开始转存
 
 1. 复制别人的夸克分享链接（如 `pan.quark.cn/s/xxxxx`）
 2. 粘贴到输入框
@@ -82,6 +91,20 @@ pip install -r requirements.txt
 python3 quark_mover.py
 ```
 
+## 打包发布
+
+如果你想打包成可执行文件分享给学员：
+
+```bash
+# 安装 PyInstaller
+pip install pyinstaller
+
+# 打包
+pyinstaller quark_mover.spec
+
+# 打包文件在 dist/ 目录下
+```
+
 ## 系统要求
 
 - 需要本机安装 Chrome 或 Edge 浏览器（用于扫码登录）
@@ -97,6 +120,9 @@ A: 登录态已过期，点击右上角「扫码登录夸克」重新登录。
 
 **Q: 二创功能报错？**
 A: 需要在设置中配置有效的 AI API Key 和 Base URL。
+
+**Q: 如何换成自己的社群二维码？**
+A: 准备两张二维码图片，命名为 `qr_gongzhonghao.jpg` 和 `qr_group.jpg`，放到 `static/` 目录即可。
 
 ## License
 
