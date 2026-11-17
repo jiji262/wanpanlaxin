@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>夸克转存助手 · QuarkMover Studio</title>
+  <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('quark-mover-theme');
+        if (t === 'light' || t === 'dark') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ============ Studio Top Navigation ============ -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg class="icon icon-lg" viewBox="0 0 24 24">
+            <path d="M7.5 18.5a4.5 4.5 0 0 1-.42-8.98 6 6 0 0 1 11.66-1.32A4 4 0 0 1 19.5 16"/>
+            <path d="M12 12v9m0 0-3-3m3 3 3-3"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">
+            <span>夸克转存助手</span>
+            <span class="brand-tag">Studio</span>
+          </div>
+          <span class="brand-subtitle">一键批量转存换链 · AI 原创推文改写</span>
+        </div>
+      </div>
+
+      <div class="status-group" role="region" aria-label="系统运行状态">
+        <button type="button" class="status-pill" id="pillQuark" title="点击登录或管理夸克网盘账号">
+          <span class="status-dot"></span>
+          <span id="pillQuarkText">检测夸克登录…</span>
+        </button>
+
+        <button type="button" class="status-pill" id="pillAI" title="点击配置 AI 模型与 API 密钥">
+          <span class="status-dot"></span>
+          <span id="pillAIText">AI 未配置</span>
+        </button>
+
+        <button type="button" class="status-pill" id="pillDir" title="点击修改网盘保存目录">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>
+          </svg>
+          <span id="pillDirText" style="font-family: var(--font-mono); font-size: 0.78125rem;">/QuarkMover</span>
+        </button>
+      </div>
+
+      <div class="header-controls">
+        <div class="theme-seg" role="group" aria-label="界面外观主题">
+          <button type="button" class="theme-opt" data-theme-val="system" title="跟随系统外观" aria-label="跟随系统外观">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="12" rx="2"/>
+              <path d="M8 20h8m-4-4v4"/>
+            </svg>
+          </button>
+          <button type="button" class="theme-opt" data-theme-val="light" title="浅色模式" aria-label="浅色模式">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/>
+            </svg>
+          </button>
+          <button type="button" class="theme-opt" data-theme-val="dark" title="深色模式" aria-label="深色模式">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+          </button>
+        </div>
+
+        <button type="button" class="btn" id="loginBtn">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <path d="M14 14h3v3h-3zm4 4h3v3h-3zm0-4h3m-7 7h3"/>
+          </svg>
+          <span id="loginBtnLabel">扫码登录</span>
+        </button>
+
+        <button type="button" class="btn" id="settingsBtn">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+          </svg>
+          <span>设置</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ Main Workspace ============ -->
+  <main class="container">
+
+    <!-- Mode Switch + Quick Share Settings -->
+    <div class="toolbar">
+      <div class="mode-tabs" id="modeTabs" data-mode="reshare_only" role="tablist" aria-label="工作模式">
+        <div class="mode-indicator" aria-hidden="true"></div>
+        <button type="button" class="mode-tab active" role="tab" aria-selected="true" data-mode="reshare_only">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          <span>仅转存换链</span>
+        </button>
+        <button type="button" class="mode-tab" role="tab" aria-selected="false" data-mode="full">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
+          </svg>
+          <span>AI 二创 + 转存</span>
+        </button>
+      </div>
+
+      <div class="quick-options" aria-label="快捷分享参数">
+        <div class="quick-chip" title="开启后新生成的夸克分享链接会自动附带随机 4 位提取码">
+          <label for="quickPasscode">
+            <input type="checkbox" id="quickPasscode">
+            <span>随机提取码</span>
+          </label>
+        </div>
+
+        <div class="quick-chip">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 2"/>
+          </svg>
+          <span>有效期：</span>
+          <select id="quickExpired" class="quick-select" aria-label="分享有效期">
+            <option value="1">永久有效</option>
+            <option value="2">1 天有效</option>
+            <option value="3">7 天有效</option>
+            <option value="4">30 天有效</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split Studio Workbench -->
+    <section class="workbench" aria-label="转存与改写工作台">
+
+      <!-- Left Card: Input -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title-wrap">
+            <h2 class="card-title" id="inputCardTitle">输入分享链接</h2>
+            <span class="badge tabular" id="detectedBadge">等待粘贴链接</span>
+          </div>
+          <div class="card-tools">
+            <button type="button" class="btn btn-ghost btn-sm" id="pasteBtn" title="从系统剪贴板粘贴">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="2" width="8" height="4" rx="1"/>
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              </svg>
+              <span>粘贴</span>
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" id="clearBtn" title="清空输入与输出">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>清空</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-wrap">
+          <textarea
+            id="inputEditor"
+            class="editor-textarea"
+            placeholder="支持直接粘贴单条或多条夸克链接（如 pan.quark.cn/s/xxxxx），也支持粘贴带提取码的完整分享口令，自动识别提取码并批量转存换链…"
+            spellcheck="false"
+          ></textarea>
+
+          <!-- Live Pipeline Stepper -->
+          <div class="pipeline-box" id="pipelineBox" role="status" aria-live="polite">
+            <div class="pipeline-top">
+              <div class="pipeline-status-left">
+                <span class="spinner" aria-hidden="true"></span>
+                <span id="pipelineTitle">正在处理任务…</span>
+              </div>
+              <span class="tabular" id="pipelineElapsed" style="font-family: var(--font-mono); font-size: 0.75rem;">0.0s</span>
+            </div>
+            <div class="pipeline-steps" id="pipelineSteps"></div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="footer-meta">
+            <span class="tabular" id="inputCount">0 字符</span>
+            <span>·</span>
+            <span>快捷键 <kbd class="kbd">⌘</kbd> + <kbd class="kbd">Enter</kbd></span>
+          </div>
+          <div class="footer-actions">
+            <button type="button" class="btn btn-primary btn-lg" id="runBtn">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>
+              </svg>
+              <span id="runBtnLabel">立即转存换链</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Card: Output -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title-wrap">
+            <h2 class="card-title">生成结果</h2>
+            <span class="badge tabular" id="outputBadge">就绪</span>
+          </div>
+          <div class="card-tools">
+            <button type="button" class="btn btn-ghost btn-sm" id="copyLinksOnlyBtn" disabled title="仅复制新生成的纯净分享链接">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              <span>仅复制链接</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Authored Empty State -->
+        <div class="result-empty" id="resultEmpty">
+          <div class="empty-graphic" aria-hidden="true">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 2v6h6M9 15h6m-6-4h3"/>
+            </svg>
+          </div>
+          <h3 class="empty-title">转存后的专属链接与推文将显示在这里</h3>
+          <p class="empty-desc">
+            粘贴对标分享链接或推文并点击「立即转存换链」，系统会自动保存资源到你的网盘并生成全新分享口令，可直接二次编辑与复制发布。
+          </p>
+        </div>
+
+        <!-- Populated Result Area -->
+        <div class="result-content hidden" id="resultContent">
+          <div class="inline-alert" id="outputAlert">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4m0 4h.01"/>
+            </svg>
+            <span id="outputAlertText"></span>
+          </div>
+
+          <div class="share-cards" id="shareCards"></div>
+
+          <textarea
+            id="outputEditor"
+            class="editor-textarea"
+            placeholder="生成的文案与分享口令，支持在此直接微调修改…"
+            spellcheck="false"
+          ></textarea>
+        </div>
+
+        <div class="card-footer">
+          <div class="footer-meta">
+            <span class="tabular" id="outputCount">0 字符</span>
+          </div>
+          <div class="footer-actions">
+            <button type="button" class="btn btn-primary btn-lg" id="copyAllBtn" disabled>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span>一键复制全文</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Local History Card -->
+    <section class="history-section" aria-label="最近转存历史">
+      <div class="history-head">
+        <div class="card-title-wrap">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-muted);">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5m4-1v5l3 2"/>
+          </svg>
+          <h2 class="card-title">最近转存记录</h2>
+          <span class="badge tabular" id="historyCountBadge">0</span>
+        </div>
+        <button type="button" class="btn btn-danger-ghost btn-sm" id="clearHistoryBtn" style="display: none;">
+          清空记录
+        </button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty">暂无历史记录，完成转存后会自动保存在本机方便随时回溯复制。</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ Refined Community Footer ============ -->
+  <footer class="community-bar">
+    <div class="community-inner">
+      <div class="community-copy">
+        <span class="badge brand">实战交流</span>
+        <span>
+          <span class="community-highlight">想用 AI 做推特网盘拉新实现持续副业变现？</span>
+          零基础实操手册与最新工具更新，扫码即可免费加入交流群。
+        </span>
+      </div>
+      <button type="button" class="btn btn-soft btn-sm" id="openPromoBtn">
+        <span>关注公众号 / 加入交流群</span>
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14m-6-6 6 6-6 6"/>
+        </svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ============ Modal 1: Quark Login (QR + Manual Cookie) ============ -->
+  <div class="modal-backdrop" id="loginModal" data-open="false" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+    <div class="modal-panel">
+      <div class="modal-top">
+        <h3 class="modal-heading" id="loginModalTitle">连接夸克网盘账号</h3>
+        <button type="button" class="btn btn-ghost btn-sm" data-close-modal="loginModal" aria-label="关闭弹窗">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <p class="modal-desc">登录态仅加密保存在你本机的 <code style="font-family:var(--font-mono);">config/cookies.txt</code> 中，用于自动化保存资源与生成分享链接。</p>
+
+      <div class="sub-tabs" role="tablist">
+        <button type="button" class="sub-tab active" data-login-tab="qr">夸克 App 扫码登录</button>
+        <button type="button" class="sub-tab" data-login-tab="cookie">手动粘贴 Cookie</button>
+      </div>
+
+      <!-- Tab Pane: Scan QR -->
+      <div id="loginPaneQr">
+        <div class="qr-stage">
+          <div class="qr-box">
+            <img id="qrImage" alt="夸克网盘登录二维码">
+            <div class="qr-placeholder" id="qrPlaceholder">
+              <span class="spinner" aria-hidden="true"></span>
+              <span id="qrPlaceholderText">正在启动安全无头浏览器…</span>
+            </div>
+          </div>
+          <div class="qr-caption" id="qrStatusText">正在准备二维码…</div>
+          <div class="qr-sub tabular" id="qrMetaText">请打开手机「夸克 App」扫一扫授权登录</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger-ghost btn-sm" id="logoutBtn" style="display: none;">退出当前账号</button>
+          <div class="modal-footer-right">
+            <button type="button" class="btn" id="refreshQrBtn">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16m0 5v-5h-5"/>
+              </svg>
+              <span>刷新二维码</span>
+            </button>
+            <button type="button" class="btn btn-primary" data-close-modal="loginModal">完成 / 关闭</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Pane: Manual Cookie -->
+      <div id="loginPaneCookie" style="display: none;">
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label" for="manualCookieInput">pan.quark.cn Cookie 字符串</label>
+            <span class="form-hint">浏览器 F12 → Network 复制请求头 Cookie</span>
+          </div>
+          <textarea
+            id="manualCookieInput"
+            class="form-textarea"
+            style="font-family: var(--font-mono); font-size: 0.78125rem;"
+            placeholder="粘贴完整的 Cookie 字符串（例如 __pus=...; __kp=...）"
+            spellcheck="false"
+          ></textarea>
+        </div>
+        <div class="modal-footer">
+          <div class="modal-footer-right">
+            <button type="button" class="btn" data-close-modal="loginModal">取消</button>
+            <button type="button" class="btn btn-primary" id="saveCookieBtn">验证并保存 Cookie</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Modal 2: Settings & AI Engine ============ -->
+  <div class="modal-backdrop" id="settingsModal" data-open="false" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <div class="modal-panel modal-wide">
+      <div class="modal-top">
+        <h3 class="modal-heading" id="settingsModalTitle">系统与 AI 引擎设置</h3>
+        <button type="button" class="btn btn-ghost btn-sm" data-close-modal="settingsModal" aria-label="关闭设置">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <p class="modal-desc">支持任意兼容 OpenAI 接口标准的模型服务商。点击下方预设可快速填入接口地址与推荐模型。</p>
+
+      <div class="preset-row" aria-label="AI 服务商快捷预设">
+        <button type="button" class="preset-chip" data-base="https://api.deepseek.com" data-model="deepseek-chat">DeepSeek</button>
+        <button type="button" class="preset-chip" data-base="https://api.openai.com/v1" data-model="gpt-4o-mini">OpenAI</button>
+        <button type="button" class="preset-chip" data-base="https://open.bigmodel.cn/api/paas/v4" data-model="glm-4-flash">智谱 GLM</button>
+        <button type="button" class="preset-chip" data-base="https://api.moonshot.cn/v1" data-model="moonshot-v1-8k">Moonshot Kimi</button>
+        <button type="button" class="preset-chip" data-base="https://dashscope.aliyuncs.com/compatible-mode/v1" data-model="qwen-plus">通义千问</button>
+        <button type="button" class="preset-chip" data-base="http://localhost:11434/v1" data-model="llama3.2">本地 Ollama</button>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label-row">
+          <label class="form-label" for="cfgKey">AI API 密钥</label>
+          <button type="button" class="btn btn-soft btn-sm" id="testAiBtn">测试连通性</button>
+        </div>
+        <div class="input-wrap">
+          <input type="password" id="cfgKey" class="form-input mono" placeholder="sk-…" autocomplete="off" style="padding-right: 36px;">
+          <button type="button" class="input-eye" id="toggleKeyVis" title="显示或隐藏密钥" aria-label="显示或隐藏密钥">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label" for="cfgBaseUrl">API Base URL</label>
+          </div>
+          <input type="text" id="cfgBaseUrl" class="form-input mono" placeholder="https://api.deepseek.com" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label" for="cfgModel">模型名称</label>
+          </div>
+          <input type="text" id="cfgModel" class="form-input mono" placeholder="deepseek-chat" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label-row">
+          <label class="form-label" for="cfgPrompt">二创改写指令 (Prompt)</label>
+          <button type="button" class="btn btn-ghost btn-sm" id="resetPromptBtn">恢复默认指令</button>
+        </div>
+        <textarea id="cfgPrompt" class="form-textarea" placeholder="包含 {text} 占位符以嵌入原推文正文…"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label" for="cfgTargetDir">夸克网盘保存目录</label>
+            <span class="form-hint">不存在将自动创建</span>
+          </div>
+          <input type="text" id="cfgTargetDir" class="form-input mono" placeholder="/QuarkMover" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label" for="cfgExpired">默认分享有效期</label>
+          </div>
+          <select id="cfgExpired" class="form-select">
+            <option value="1">永久有效</option>
+            <option value="2">1 天有效</option>
+            <option value="3">7 天有效</option>
+            <option value="4">30 天有效</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 4px;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.84375rem; font-weight: 500;">
+          <input type="checkbox" id="cfgPasscode" style="accent-color: var(--brand); width: 16px; height: 16px;">
+          <span>生成新分享链接时默认启用随机 4 位提取码</span>
+        </label>
+      </div>
+
+      <div class="modal-footer">
+        <span id="aiTestResult" class="form-hint tabular"></span>
+        <div class="modal-footer-right">
+          <button type="button" class="btn" data-close-modal="settingsModal">取消</button>
+          <button type="button" class="btn btn-primary" id="saveSettingsBtn">保存设置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Modal 3: Community & Tutorials ============ -->
+  <div class="modal-backdrop" id="promoModal" data-open="false" role="dialog" aria-modal="true" aria-labelledby="promoModalTitle">
+    <div class="modal-panel modal-wide">
+      <div class="modal-top">
+        <h3 class="modal-heading" id="promoModalTitle">加入网盘拉新实战交流社群</h3>
+        <button type="button" class="btn btn-ghost btn-sm" data-close-modal="promoModal" aria-label="关闭社群弹窗">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <p class="modal-desc">手把手教你用 AI 自动化矩阵做推特与自媒体网盘拉新。扫码关注公众号或加入交流群，免费领取最新实操教程与工具版本更新。</p>
+
+      <div class="promo-grid">
+        <div class="promo-card">
+          <img src="/static/qr_gongzhonghao.jpg" alt="关注公众号二维码" onerror="this.closest('.promo-card').style.display='none'">
+          <span class="promo-card-label">微信扫码关注公众号</span>
+        </div>
+        <div class="promo-card">
+          <img src="/static/qr_group.jpg" alt="加入交流群二维码" onerror="this.closest('.promo-card').style.display='none'">
+          <span class="promo-card-label">扫码加入实战交流群</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-primary" data-close-modal="promoModal">我知道了</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spatial Toast Container -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
